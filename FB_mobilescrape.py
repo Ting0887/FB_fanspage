@@ -30,7 +30,7 @@ chrome_options.add_argument('--no-sandbox')
 
 ua = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0"
 chrome_options.add_argument("user-agent={}".format(ua))
-driverPath = 'c:\\users\csr\chromedriver.exe'
+driverPath = 'chromedriver.exe'
 browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
 browser.set_window_size('500','400')
 #read credentials
