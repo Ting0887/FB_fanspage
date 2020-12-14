@@ -30,7 +30,7 @@ chrome_options.add_argument('--no-sandbox')
 
 ua = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0"
 chrome_options.add_argument("user-agent={}".format(ua))
-driverPath = 'chromedriver.exe'
+driverPath = 'c:\\users\csr\chromedriver.exe'
 browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
 browser.set_window_size('500','400')
 #read credentials
@@ -115,14 +115,21 @@ def fb_scrape():
             
             
             #Fans_pages name
-            source = soup.find('div','_59k _2rgt _1j-f _2rgt').text
+
             
             num = 1
             for post in postlist:
+                
                 time.sleep(1.5)
                 
                 pid = num
                 
+                #source
+                try:
+                    source = post.find('h3','_52jd _52jb _52jh _5qc3 _4vc- _3rc4 _4vc-').text
+                except:
+                    source = ''
+                    
                 #datetime
                 try:
                     date_time = post.find('abbr').text
