@@ -3,9 +3,11 @@ import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 import time
 import json
 
@@ -32,7 +34,7 @@ ua = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0"
 chrome_options.add_argument("user-agent={}".format(ua))
 driverPath = 'c:\\users\csr\chromedriver.exe'
 browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
-browser.set_window_size('500','400')
+browser.set_window_size('900','800')
 #read credentials
 user = []
 passw_f = 'credentials.txt'
@@ -85,6 +87,7 @@ def fb_scrape():
             postlist = soup.select('._55wo')
             postN = len(postlist)
             
+            scroll_pause_time = 20
             #when post > 3 break
             while postN < 3:
                 browser.execute_script(js)
@@ -94,8 +97,11 @@ def fb_scrape():
                 postN = len(postlist)
                 print(postN)
                 
+            
+            last_height = browser.execute_script("return document.body.scrollHeight")
+            
             while True:
-                time.sleep(2)
+                
                 browser.execute_script(js)
                 soup = BeautifulSoup(browser.page_source,'lxml')
     
@@ -106,17 +112,30 @@ def fb_scrape():
                         
                     except:
                         pass
-                    
+                time.sleep(3)
                     #print(post_time)
                 post_time = soup.find_all('abbr')[-1].text
                 print(post_time)
-                if '2019' in post_time:
+                if post_time.startswith('2019') or\
+                   post_time.startswith('2018') or\
+                   post_time.startswith('2017') or\
+                   post_time.startswith('2016') or\
+                   post_time.startswith('2015') or\
+                   post_time.startswith('2014') or\
+                   post_time.startswith('2013') or \
+                   post_time.startswith('2012') or\
+                   post_time.startswith('2011') or\
+                   post_time.startswith('2010') :
                     break
-            
+                
+                #if scroll down to bottom
+                new_height = browser.execute_script("return document.body.scrollHeight")
+                if new_height == last_height:
+                    break
+                last_height = new_height
+     
             
             #Fans_pages name
-
-            
             num = 1
             for post in postlist:
                 
@@ -126,22 +145,26 @@ def fb_scrape():
                 
                 #source
                 try:
-                    source = post.find('h3','_52jd _52jb _52jh _5qc3 _4vc- _3rc4 _4vc-').text
+                    source = post.find('h3',{'data-gt':'{"tn":"C"}'}).strong.text
                 except:
                     source = ''
                     
                 #datetime
-                try:
+                try:                   
                     date_time = post.find('abbr').text
-                    
-                    if '月' in date_time:
-                        date_time = time.strftime('%Y年') + post.find('abbr').text
-                    elif '年' in date_time:
+                    if '年' in date_time:
                         date_time = post.find('abbr').text
-                    else:
+                    elif '時' in date_time:
                         date_time = time.strftime('%Y年%m月%d日')
+                    elif '分' in date_time:
+                        date_time = time.strftime('%Y年%m月%d日')
+                    elif '秒' in date_time:
+                        date_time = time.strftime('%Y年%m月%d日')
+                    else:
+                        date_time = time.strftime('%Y年') + post.find('abbr').text
                 except:
                     date_time = ''
+                    
                 #if 2019 in datetime break running code
                 if '2019' in date_time:
                     break
