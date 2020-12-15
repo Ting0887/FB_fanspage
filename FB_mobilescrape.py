@@ -139,7 +139,7 @@ def fb_scrape():
             num = 1
             for post in postlist:
                 
-                time.sleep(1.5)
+                time.sleep(1)
                 
                 pid = num
                 
@@ -160,15 +160,13 @@ def fb_scrape():
                         date_time = time.strftime('%Y年%m月%d日')
                     elif '秒' in date_time:
                         date_time = time.strftime('%Y年%m月%d日')
+                    elif '昨' in date_time:
+                        date_time = time.strftime('%Y年%m月%d日')
                     else:
                         date_time = time.strftime('%Y年') + post.find('abbr').text
                 except:
                     date_time = ''
-                    
-                #if 2019 in datetime break running code
-                if '2019' in date_time:
-                    break
-                
+        
                 #likes total
                 try:
                     likes = post.find('div','_1g06').text.replace(',','')
