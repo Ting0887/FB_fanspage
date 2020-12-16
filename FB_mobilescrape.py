@@ -11,9 +11,10 @@ from selenium.common.exceptions import TimeoutException
 import time
 import json
 
-
+#chromedriver setting
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--incognito")
+# if you don't want to open browser, add 18th line 
 #chrome_options.add_argument("--headless")
 
 prefs = {"profile.default_content_setting_values.notifications": 2}
@@ -35,6 +36,7 @@ chrome_options.add_argument("user-agent={}".format(ua))
 driverPath = 'c:\\users\csr\chromedriver.exe'
 browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
 browser.set_window_size('900','800')
+
 #read credentials
 user = []
 passw_f = 'credentials.txt'
@@ -63,11 +65,14 @@ def fb_scrape():
             
             browser.get(link)
             soup = BeautifulSoup(browser.page_source,'lxml')
-            
+           
+          
             #some links can't change to phone link
             if 'www' in browser.current_url:
                 link = browser.current_url.replace('www','m')
                 browser.get(link)
+                soup = BeautifulSoup(browser.page_source,'lxml')
+                [x.extract() for x in soup.findAll(['script'])]
 
             #if 404 link, write into notparselink.txt 
             try:
@@ -79,15 +84,24 @@ def fb_scrape():
                     continue
             except:
                 print('link is ok')
+            
+            #if '載入中' in page ,write into notparselink.txt
+            try:
+                ele = soup.find('div','_39jv').text
+                if '載入中……' in ele:
+                   with open('notparselink.txt','a',encoding='utf8') as f:
+                        f.write(link)
+                        f.write('\n')
+                   continue
+            except:
+                print('link is ok')
                 
             js = 'window.scrollTo(0, document.body.scrollHeight)'
             browser.execute_script(js)
-            articlelist = []
-            
+                   
             postlist = soup.select('._55wo')
             postN = len(postlist)
-            
-            scroll_pause_time = 20
+
             #when post > 3 break
             while postN < 3:
                 browser.execute_script(js)
@@ -113,9 +127,10 @@ def fb_scrape():
                     except:
                         pass
                 time.sleep(3)
-                    #print(post_time)
+
                 post_time = soup.find_all('abbr')[-1].text
                 print(post_time)
+                
                 if post_time.startswith('2019') or\
                    post_time.startswith('2018') or\
                    post_time.startswith('2017') or\
@@ -135,7 +150,8 @@ def fb_scrape():
                 last_height = new_height
      
             
-            #Fans_pages name
+            #scrape fans page post
+            articlelist = []
             num = 1
             for post in postlist:
                 
@@ -143,7 +159,7 @@ def fb_scrape():
                 
                 pid = num
                 
-                #source
+                #source(fans page name)
                 try:
                     source = post.find('h3',{'data-gt':'{"tn":"C"}'}).strong.text
                 except:
@@ -200,7 +216,7 @@ def fb_scrape():
                 
                 
                 #scrape content
-                #more content
+                #more content clink
                 try:
                     ele = browser.find_element_by_xpath("//span[data-sigil='more']").click()
                 except:
@@ -230,12 +246,14 @@ def fb_scrape():
                 
                 print(article)
                 
+                # if datetime and link is null,don't append them
                 if date_time == "" or link == "":
                     continue
                 else:
                     articlelist.append(article)
                     num += 1
-                    
+            
+            #write to json file
             file = file_name + '_post.json'
             with open(file,'w',encoding='utf8') as f:
                 json.dump(articlelist,f,ensure_ascii=False,indent=2)
