@@ -155,7 +155,7 @@ def fb_scrape():
             num = 1
             for post in postlist:
                 
-                time.sleep(1)
+                time.sleep(0.5)
                 
                 pid = num
                 
@@ -187,7 +187,7 @@ def fb_scrape():
                 try:
                     likes = post.find('div','_1g06').text.replace(',','')
                     if '萬' in likes:
-                        likes = int(float(likes[:-2])*10000)
+                        likes = int(float(re.findall(r'\d+\.\d+',likes)[0])*10000)
                     else:
                         likes = re.findall(r'\d+',likes)[0]
                 except:
