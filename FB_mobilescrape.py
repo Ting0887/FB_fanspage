@@ -96,24 +96,37 @@ def fb_scrape():
             except:
                 print('link is ok')
                 
+            
+                
             js = 'window.scrollTo(0, document.body.scrollHeight)'
             browser.execute_script(js)
                    
             postlist = soup.select('._55wo')
             postN = len(postlist)
-
-            #when post > 3 break
-            while postN < 3:
+            
+            last_height = browser.execute_script("return document.body.scrollHeight")
+            #when post > 2 break
+            while postN < 2:
                 browser.execute_script(js)
+                time.sleep(2)
                 browser.execute_script('videos = document.querySelectorAll("video"); for(video of videos) {video.pause()}')
                 soup = BeautifulSoup(browser.page_source,'lxml')
                 postlist = soup.select('._55wo')
                 postN = len(postlist)
                 print(postN)
                 
-            
-            last_height = browser.execute_script("return document.body.scrollHeight")
-            
+                #if scroll down to bottom
+                new_height = browser.execute_script("return document.body.scrollHeight")
+                if new_height == last_height:
+                    break
+                last_height = new_height
+            # if no posts, continue
+            if postN == 1:
+                with open('notparselink.txt','a',encoding='utf8') as f:
+                    f.write(link)
+                    f.write('\n')
+                continue
+     
             while True:
                 
                 browser.execute_script(js)
@@ -188,8 +201,10 @@ def fb_scrape():
                     likes = post.find('div','_1g06').text.replace(',','')
                     if '萬' in likes:
                         likes = int(float(re.findall(r'\d+\.\d+',likes)[0])*10000)
-                    else:
+                    elif '人' in likes:
                         likes = re.findall(r'\d+',likes)[0]
+                    else:
+                        likes = post.find('div','_1g06').text.replace(',','')
                 except:
                     likes = '0'
                 
@@ -222,7 +237,7 @@ def fb_scrape():
                 except:
                     pass
                 
-                time.sleep(1.5)
+                time.sleep(0.5)
                     
                 try:
                     article_content = post.find('div','_5rgt _5nk5 _5msi').text.replace('… 更多','')
@@ -244,7 +259,8 @@ def fb_scrape():
                            'article_content':article_content,
                            'link':link}
                 
-                print(article)
+                #print(article)
+             
                 
                 # if datetime and link is null,don't append them
                 if date_time == "" or link == "":
@@ -252,7 +268,7 @@ def fb_scrape():
                 else:
                     articlelist.append(article)
                     num += 1
-            
+                    print('第',pid,'筆資料已經完成')
             #write to json file
             file = file_name + '_post.json'
             with open(file,'w',encoding='utf8') as f:
