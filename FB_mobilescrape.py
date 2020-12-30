@@ -126,17 +126,15 @@ def fb_scrape():
                     f.write(link)
                     f.write('\n')
                 continue
-     
+            
+            last_height = browser.execute_script("return document.body.scrollHeight")
             while True:
-                
                 browser.execute_script(js)
-                soup = BeautifulSoup(browser.page_source,'lxml')
-    
+                soup = BeautifulSoup(browser.page_source,'lxml')   
                 postlist = soup.select('._55wo')
                 for post in postlist:
                     try:
-                        post_time = post.find('abbr').text
-                        
+                        post_time = post.find('abbr').text                     
                     except:
                         pass
                 time.sleep(3)
@@ -154,8 +152,7 @@ def fb_scrape():
                    post_time.startswith('2012') or\
                    post_time.startswith('2011') or\
                    post_time.startswith('2010') :
-                    break
-                
+                    break             
                 #if scroll down to bottom
                 new_height = browser.execute_script("return document.body.scrollHeight")
                 if new_height == last_height:
@@ -166,8 +163,7 @@ def fb_scrape():
             #scrape fans page post
             articlelist = []
             num = 1
-            for post in postlist:
-                
+            for post in postlist:              
                 time.sleep(0.5)
                 
                 pid = num
