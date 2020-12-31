@@ -96,6 +96,18 @@ def fb_scrape():
             except:
                 print('link is ok')
                 
+            #if Sorry, something went wrong in page,write into notparselink.txt
+            try:
+                ele = soup.find('div','area error').strong.text
+                if 'Sorry, something went wrong.' in ele:
+                   with open('notparselink.txt','a',encoding='utf8') as f:
+                        f.write(link)
+                        f.write('\n')
+                   continue
+            except:
+                print('link is ok')
+                
+                
             
                 
             js = 'window.scrollTo(0, document.body.scrollHeight)'
