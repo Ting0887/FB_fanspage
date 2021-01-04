@@ -139,10 +139,10 @@ def fb_scrape():
                     f.write('\n')
                 continue
             
-            try:
-                browser.set_page_load_timeout(1.5)
-                last_height = browser.execute_script("return document.body.scrollHeight")
-                while True:
+            
+            last_height = browser.execute_script("return document.body.scrollHeight")
+            while True:
+                try:
                     browser.execute_script(js)
                     soup = BeautifulSoup(browser.page_source,'lxml')   
                     postlist = soup.select('._55wo')
@@ -172,12 +172,9 @@ def fb_scrape():
                     if new_height == last_height:
                         break
                     last_height = new_height
-                    
-            #if scroll down broken
-            except TimeoutException as e:
-                print('time out')
-                
-         
+                except Exception as e:
+                    pass
+     
             
             #scrape fans page post
             articlelist = []
