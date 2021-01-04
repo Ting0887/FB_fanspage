@@ -139,38 +139,45 @@ def fb_scrape():
                     f.write('\n')
                 continue
             
-            last_height = browser.execute_script("return document.body.scrollHeight")
-            while True:
-                browser.execute_script(js)
-                soup = BeautifulSoup(browser.page_source,'lxml')   
-                postlist = soup.select('._55wo')
-                for post in postlist:
-                    try:
-                        post_time = post.find('abbr').text                     
-                    except:
-                        pass
-                time.sleep(3)
-
-                post_time = soup.find_all('abbr')[-1].text
-                print(post_time)
+            try:
+                browser.set_page_load_timeout(1.5)
+                last_height = browser.execute_script("return document.body.scrollHeight")
+                while True:
+                    browser.execute_script(js)
+                    soup = BeautifulSoup(browser.page_source,'lxml')   
+                    postlist = soup.select('._55wo')
+                    for post in postlist:
+                        try:
+                            post_time = post.find('abbr').text                     
+                        except:
+                            pass
+                    time.sleep(3)
+    
+                    post_time = soup.find_all('abbr')[-1].text
+                    print(post_time)
+                    
+                    if post_time.startswith('2019') or\
+                       post_time.startswith('2018') or\
+                       post_time.startswith('2017') or\
+                       post_time.startswith('2016') or\
+                       post_time.startswith('2015') or\
+                       post_time.startswith('2014') or\
+                       post_time.startswith('2013') or \
+                       post_time.startswith('2012') or\
+                       post_time.startswith('2011') or\
+                       post_time.startswith('2010') :
+                        break             
+                    #if scroll down to bottom
+                    new_height = browser.execute_script("return document.body.scrollHeight")
+                    if new_height == last_height:
+                        break
+                    last_height = new_height
+                    
+            #if scroll down broken
+            except TimeoutException as e:
+                print('time out')
                 
-                if post_time.startswith('2019') or\
-                   post_time.startswith('2018') or\
-                   post_time.startswith('2017') or\
-                   post_time.startswith('2016') or\
-                   post_time.startswith('2015') or\
-                   post_time.startswith('2014') or\
-                   post_time.startswith('2013') or \
-                   post_time.startswith('2012') or\
-                   post_time.startswith('2011') or\
-                   post_time.startswith('2010') :
-                    break             
-                #if scroll down to bottom
-                new_height = browser.execute_script("return document.body.scrollHeight")
-                if new_height == last_height:
-                    break
-                last_height = new_height
-     
+         
             
             #scrape fans page post
             articlelist = []
