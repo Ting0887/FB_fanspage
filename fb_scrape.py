@@ -64,6 +64,7 @@ def scroll_down(link):
     last_height = browser.execute_script("return document.body.scrollHeight")
     while True:
          try:
+             browser.set_script_timeout(10)
              browser.execute_script(js)
              soup = BeautifulSoup(browser.page_source,'lxml')   
              postlist = soup.select('._55wo')
@@ -95,7 +96,7 @@ def scroll_down(link):
              last_height = new_height
          except Exception as e:
              pass
-
+    browser.refresh()
     return postlist
 
 def scrape(link):
@@ -166,14 +167,6 @@ def scrape(link):
                 
                 
          #scrape content
-         #more content clink
-         try:
-             ele = browser.find_element_by_xpath("//span[data-sigil='more']").click()
-         except:
-             pass
-                
-         time.sleep(0.5)
-                    
          try:
              article_content = post.find('div','_5rgt _5nk5 _5msi').text.replace('… 更多','')
          except:
@@ -219,7 +212,7 @@ if __name__ == '__main__':
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--incognito")
     # if you don't want to open browser, add 18th line 
-    chrome_options.add_argument("--headless")
+    #chrome_options.add_argument("--headless")
     
     prefs = {"profile.default_content_setting_values.notifications": 2}
     chrome_options.add_experimental_option('prefs', prefs)
@@ -237,14 +230,14 @@ if __name__ == '__main__':
     
     ua = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0"
     chrome_options.add_argument("user-agent={}".format(ua))
-    driverPath = '/home/tingyang0518/chromedriver'
+    driverPath = 'c:\\users\csr\chromedriver.exe'
     browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
     browser.set_window_size('900','800')
     
     login_fb()
     time.sleep(3)
     #from all fb_fans_link to parse data
-    file1 = 'm_f.txt'
+    file1 = 'm_follow.txt'
     with open(dirpath+'/'+file1,'r',encoding='utf8') as f:
         for links in f:
             link = links.replace('\n','')
