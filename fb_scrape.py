@@ -9,6 +9,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from set_driver import driver_setting
+from output_sample import json_output
+from handle_elements import handle_likes,handle_share,handle_comment,handle_posttime
 import time
 import json
 
@@ -59,8 +62,7 @@ def scroll_down(link):
          # if no posts, continue
          if postN == 1:
               continue
-
-               
+           
     last_height = browser.execute_script("return document.body.scrollHeight")
     while True:
          try:
@@ -76,19 +78,11 @@ def scroll_down(link):
              time.sleep(3)
     
              post_time = soup.find_all('abbr')[-1].text
+             handle_posttime(post_time)
              print(post_time)
                 
-             if post_time.startswith('2019') or\
-                post_time.startswith('2018') or\
-                post_time.startswith('2017') or\
-                post_time.startswith('2016') or\
-                post_time.startswith('2015') or\
-                post_time.startswith('2014') or\
-                post_time.startswith('2013') or \
-                post_time.startswith('2012') or\
-                post_time.startswith('2011') or\
-                post_time.startswith('2010') :
-                     break             
+             if post_time < '2020年01月01日':
+                 break             
              #if scroll down to bottom
              new_height = browser.execute_script("return document.body.scrollHeight")
              if new_height == last_height:
@@ -104,7 +98,7 @@ def scrape(link):
      articlelist = []
      num = 1
      for post in scroll_down(link):              
-         time.sleep(0.5)
+         #time.sleep(0.5)
          
          pid = num
                 
@@ -117,54 +111,30 @@ def scrape(link):
          #datetime
          try:                   
              date_time = post.find('abbr').text
-             if '年' in date_time:
-                 date_time = post.find('abbr').text
-             elif '時' in date_time:
-                 date_time = time.strftime('%Y年%m月%d日')
-             elif '分' in date_time:
-                 date_time = time.strftime('%Y年%m月%d日')
-             elif '秒' in date_time:
-                 date_time = time.strftime('%Y年%m月%d日')
-             elif '昨' in date_time:
-                 date_time = time.strftime('%Y年%m月%d日')
-             else:
-                 date_time = time.strftime('%Y年') + post.find('abbr').text
          except:
-              date_time = ''
+              date_time = ''            
+         handle_posttime(date_time)
         
          #likes total
          try:
              likes = post.find('div','_1g06').text.replace(',','')
-             if '萬' in likes:
-                 likes = int(float(re.findall(r'\d+\.\d+',likes)[0])*10000)
-             elif '人' in likes:
-                 likes = re.findall(r'\d+',likes)[0]
-             else:
-                 likes = post.find('div','_1g06').text.replace(',','')
          except:
              likes = '0'
+         handle_likes(likes)
                 
          #comments total
          try:
              comment_count = post.find('span',{'data-sigil':'comments-token'}).text.replace(',','').replace('則留言','')
-             if '萬' in comment_count:
-                 comment_count = int(float(comment_count[:-2])*10000)
-             else:
-                 comment_count = post.find('span',{'data-sigil':'comments-token'}).text.replace(',','').replace('則留言','')
          except:
              comment_count = '0'
-
-                
+         handle_comment(comment_count)
+            
          #shares count
          try:
              share_count = post.find_all('span','_1j-c',string = re.compile('次分享$'))[0].text.replace(',','').replace('次分享','')
-             if '萬' in share_count:
-                 share_count = int(float(share_count[:-2]*10000))
-             else:
-                 share_count = post.find_all('span','_1j-c',string = re.compile('次分享$'))[0].text.replace(',','').replace('次分享','')
          except:
              share_count = '0'
-                
+         handle_share(share_count)
                 
          #scrape content
          try:
@@ -178,21 +148,15 @@ def scrape(link):
          except:
             post_link = ''
                     
-         article = {'pid':pid,
-                    'source':source,
-                    'date_time':date_time,
-                    'total_like':likes,
-                    'share_count':share_count,
-                    'comment_count':comment_count,
-                    'article_content':article_content,
-                    'link':post_link}
+         article = json_output(pid,source,date_time,likes,share_count,comment_count,article_content,post_link)
+         
          # if datetime and link is null,don't append them
          if date_time == "" or post_link == "":
              continue
          else:
              articlelist.append(article)
              num += 1
-             print('第',pid,'筆資料已經完成')
+           #  print('第',pid,'筆資料已經完成')
          #print(article)
 
      return articlelist
@@ -207,31 +171,9 @@ if __name__ == '__main__':
 
     #absoulte path
     dirpath = os.path.dirname(os.path.abspath(__file__))
-
-    #chromedriver setting
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--incognito")
-    # if you don't want to open browser, add 18th line 
-    #chrome_options.add_argument("--headless")
-    
-    prefs = {"profile.default_content_setting_values.notifications": 2}
-    chrome_options.add_experimental_option('prefs', prefs)
-    prefs = {'profile.managed_default_content_settings.images':2, 'disk-cache-size': 4096, 'intl.accept_languages': 'en-US'}
-    chrome_options.add_argument('--dns-prefetch-disable')
-    chrome_options.add_argument('disable-infobars')
-    chrome_options.add_argument('blink-settings=imagesEnabled=false') 
-    chrome_options.add_argument("--disable-javascript") 
-    chrome_options.add_argument("--disable-images")
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument("--disable-plugins")
-    chrome_options.add_argument("--in-process-plugins")
-    chrome_options.add_argument('--no-sandbox')
-    
-    
-    ua = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0"
-    chrome_options.add_argument("user-agent={}".format(ua))
+  
     driverPath = 'c:\\users\csr\chromedriver.exe'
-    browser = webdriver.Chrome(driverPath,chrome_options=chrome_options)
+    browser = webdriver.Chrome(driverPath,chrome_options=driver_setting())
     browser.set_window_size('900','800')
     
     login_fb()
