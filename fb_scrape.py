@@ -78,7 +78,7 @@ def scroll_down(link):
              time.sleep(3)
     
              post_time = soup.find_all('abbr')[-1].text
-             handle_posttime(post_time)
+             post_time = handle_posttime(post_time)
              print(post_time)
                 
              if post_time < '2020年01月01日':
@@ -112,29 +112,28 @@ def scrape(link):
          try:                   
              date_time = post.find('abbr').text
          except:
-              date_time = ''            
-         handle_posttime(date_time)
-        
+             date_time = ''            
+         date_time = handle_posttime(date_time)    
          #likes total
          try:
              likes = post.find('div','_1g06').text.replace(',','')
          except:
              likes = '0'
-         handle_likes(likes)
+         likes = handle_likes(likes)
                 
          #comments total
          try:
              comment_count = post.find('span',{'data-sigil':'comments-token'}).text.replace(',','').replace('則留言','')
          except:
              comment_count = '0'
-         handle_comment(comment_count)
+         comment_count = handle_comment(comment_count)
             
          #shares count
          try:
              share_count = post.find_all('span','_1j-c',string = re.compile('次分享$'))[0].text.replace(',','').replace('次分享','')
          except:
              share_count = '0'
-         handle_share(share_count)
+         share_count = handle_share(share_count)
                 
          #scrape content
          try:
