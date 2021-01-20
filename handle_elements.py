@@ -45,12 +45,15 @@ def handle_posttime(post_time):
         post_time = time.strftime('%Y年%m月%d日')
     elif '昨' in post_time:
         post_time = time.strftime('%Y年%m月%d日')
-            
+
     elif '年' not in post_time:
-        post_time = time.strftime('%Y年') + post_time
-        d = re.findall(r'\d+',post_time)
-        post_time = datetime.date(int(d[0]),int(d[1]),int(d[2]))
-        post_time = post_time.strftime('%Y年%m月%d日')
+        try:
+            post_time = time.strftime('%Y年') + post_time
+            d = re.findall(r'\d+',post_time)
+            post_time = datetime.date(int(d[0]),int(d[1]),int(d[2]))
+            post_time = post_time.strftime('%Y年%m月%d日')
+        except:
+            post_time = ''
     
     else:
         post_time = time.strftime('%Y年%m月%d日')
