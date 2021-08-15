@@ -26,7 +26,7 @@ driverPath = 'your chromedriver path'
         
 account = 'your account'
 password = 'your password'
-post_URL = 'add post url'
+post_URL = 'add mobile post url'
 comment_limit = 'set comment limit<int>' ex. 100
 output_file = 'your file name' ex. test
 
